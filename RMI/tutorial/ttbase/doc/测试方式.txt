@@ -1,0 +1,119 @@
+RPC, RMI
+远程方法调用
+
+
+一. 本地测试方法: 
+(客户端和服务端都在同一台机器, 172.26.190.79 )
+
+编辑/etc/hosts
+172.26.190.79 localhost yeahsj.com
+
+1. 首先要到开放的接口(暴露给客户端使用的接口)目录下执行 rmiregister, 
+如/home/sangjun/code/study/study_j2ee_sample/RMI/tutorial/ttbase/bin
+这个下面是开放的所有接口类的根目录.
+
+如果没有在正确的目录下启动rmiregister,则后面程序会一直报class not found.
+
+2. 启动服务程序
+java -cp /home/sangjun/code/study/study_j2ee_sample/RMI/tutorial/ttserver/build/classes:/var/www/html/rmi/server/compute.jar \
+-Djava.rmi.server.codebase=http://yeahsj.com/html/rmi/server/compute.jar \
+-Djava.rmi.server.hostname=yeahsj.com \
+-Djava.security.policy=/home/sangjun/code/study/study_j2ee_sample/RMI/tutorial/ttserver/resource/server.policy \
+-Djava.security.debug=access,failure \
+com.openjava.study.rmi.ComputeEngine
+
+第一行为本地查找类路径
+第二行为RMI查找路径
+第三行则为RMI注册服务器
+第四行为policy文件
+第五行为debug打印设置
+
+
+java -cp /home/sangjun/code/study/study_j2ee_sample/RMI/tutorial/ttserver/build/classes:/var/www/html/rmi/server/compute.jar \
+-Djava.rmi.server.hostname=yeahsj.com \
+-Djava.security.policy=/home/sangjun/code/study/study_j2ee_sample/RMI/tutorial/ttserver/resource/server.policy \
+-Djava.security.debug=access,failure \
+com.openjava.study.rmi.ComputeEngine
+
+3. 启动客户端程序
+
+java -cp /home/sangjun/code/study/study_j2ee_sample/RMI/tutorial/ttclient/build/classes:/var/www/html/rmi/server/compute.jar \
+-Djava.rmi.server.codebase="http://yeahsj.com/html/rmi/server/compute.jar file:///home/sangjun/code/study/study_j2ee_sample/RMI/tutorial/ttclient/build/classes" \
+-Djava.security.policy=/home/sangjun/code/study/study_j2ee_sample/RMI/tutorial/ttclient/resource/client.policy \
+-Djava.security.debug=access,failure \
+com.openjava.study.rmi.ComputePi \
+yeahsj.com 4
+
+
+java -cp /home/sangjun/code/study/study_j2ee_sample/RMI/tutorial/ttclient/build/classes:/var/www/html/rmi/server/compute.jar \
+-Djava.security.policy=/home/sangjun/code/study/study_j2ee_sample/RMI/tutorial/ttclient/resource/client.policy \
+-Djava.security.debug=access,failure \
+com.openjava.study.rmi.ComputePi \
+yeahsj.com 4
+
+
+java -cp /root/rmi/classes:/root/rmi/resource/compute.jar \
+-Djava.security.policy=/root/rmi/resource/client.policy \
+-Djava.security.debug=access,failure \
+com.openjava.study.rmi.ComputePi \
+yeahsj.com 4
+
+
+二. 远程测试方法:
+第一步和第二步和以上一样, 第三步将在另外一台机器上执行. 程序在 remote下.
+
+jdk1.8.0_45/bin/java \
+-cp /root/rmi/classes:/root/rmi/resource/compute.jar \
+-Djava.security.policy=/root/rmi/resource/client.policy \
+-Djava.security.debug=access,failure \
+com.openjava.study.rmi.ComputePi \
+yeahsj.com 4
+
+/opt/jdk1.8.0_45/bin/java -cp /opt/rmiclt/classes:/opt/rmiclt/resource/compute.jar \
+-Djava.security.policy=/opt/rmiclt/resource/client.policy \
+-Djava.security.debug=access,failure \
+com.openjava.study.rmi.ComputePi yeahsj.com 45
+
+/opt/jdk1.8.0_45/bin/java -cp /opt/rmiclt/classes:/opt/rmiclt/resource/compute.jar \
+-Djava.security.policy=/opt/rmiclt/resource/client.policy \
+-Djava.security.debug=access,failure \
+com.openjava.study.rmi.ComputePi localhost 45
+
+
+
+
+三.主从服务器测试方法
+主服务器： 172.26.190.79
+从服务器:  172.26.183.150
+
+主服务端启动命令:
+java -cp /opt/rmisrv/classes:/opt/rmisrv/resource/compute.jar\
+ -Djava.rmi.server.codebase=http://yeahsj.com/html/rmi/server/compute.jar\
+ -Djava.rmi.server.hostname=yeahsj.com\
+ -Djava.security.policy=/opt/rmisrv/resource/server.policy\
+ -Djava.security.debug=access,failure\
+ com.openjava.study.rmi.ComputeEngine
+ 
+ 
+从服务端启动: 
+/opt/jdk1.8.0_45/bin/java -cp /opt/rmisrv/classes:/opt/rmisrv/resource/compute.jar\
+ -Djava.rmi.server.codebase=http://yeahsj.com/html/rmi/server/compute.jar\
+ -Djava.rmi.server.hostname=yeahsj.com\
+ -Djava.security.policy=/opt/rmisrv/resource/server.policy\
+ -Djava.security.debug=access,failure\
+ com.openjava.study.rmi.SlaverComputeEngine  yeahsj.com
+ 
+ 
+测试Slaver服务器,实际上它们最终会将请求传给主服务器上的业务服务器去执行:
+在172.26.190.79执行:
+/opt/jdk1.8.0_45/bin/java -cp /opt/rmiclt/classes:/opt/rmiclt/resource/compute.jar \
+-Djava.security.policy=/opt/rmiclt/resource/client.policy \
+-Djava.security.debug=access,failure \
+com.openjava.study.rmi.ComputePi 172.26.183.150 45 SlaverCompute
+
+在172.26.183.150执行:
+/opt/jdk1.8.0_45/bin/java -cp /opt/rmiclt/classes:/opt/rmiclt/resource/compute.jar \
+-Djava.security.policy=/opt/rmiclt/resource/client.policy \
+-Djava.security.debug=access,failure \
+com.openjava.study.rmi.ComputePi localhost 45 SlaverCompute
+

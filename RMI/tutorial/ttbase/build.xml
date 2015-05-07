@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="default">
+	<property file="build.properties">
+	</property>
+	<property name="build.class.dir" value="${build.dir}/classes" />
+
+	<tstamp>
+		<format property="today" pattern="yyyyMMdd" offset="0" unit="day" />
+	</tstamp>
+
+	<target name="init">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${target.dir}" />
+		<mkdir dir="${build.class.dir}" />
+		<delete>
+			<fileset dir="${target.dir}/">
+			</fileset>
+		</delete>
+	</target>
+
+	<target name="compile" depends="init">
+		<javac srcdir="${src.java.dir}" destdir="${build.class.dir}" encoding="utf-8" fork="true" debug="true" includeantruntime="false">
+			<include name="**/*.java" />
+		</javac>
+	</target>
+
+	<target name="default" depends="compile">
+		<jar destfile="${target.dir}/${jar.file}">
+			<fileset dir="${build.class.dir}" />
+		</jar>
+		<delete dir="${build.class.dir}">
+		</delete>
+	</target>
+</project>

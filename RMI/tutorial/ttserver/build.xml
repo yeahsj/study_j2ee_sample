@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="default">
+	<property file="build.properties">
+	</property>
+	<property name="build.class.dir" value="${build.dir}/classes" />
+	<property name="target.rmisrv" value="${target.dir}/rmisrv" />
+	<tstamp>
+		<format property="today" pattern="yyyyMMdd" offset="0" unit="day" />
+	</tstamp>
+
+	<path id="buildpath">
+		<fileset dir="${src.resource.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<target name="init">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${build.class.dir}" />
+		<mkdir dir="${target.dir}" />
+		<mkdir dir="${target.rmisrv}" />
+		<delete>
+			<fileset dir="${target.dir}/">
+			</fileset>
+		</delete>
+	</target>
+
+
+	<target name="compile" depends="init">
+		<javac srcdir="${src.java.dir}" destdir="${build.class.dir}" encoding="utf-8" fork="true" debug="true" includeantruntime="false" classpathref="buildpath">
+			<include name="**/*.java" />
+		</javac>
+	</target>
+
+	<!-- 构建服务器运行包 -->
+	<target name="build" depends="compile">
+		<copy todir="${target.rmisrv}/classes" overwrite="true">
+			<fileset dir="${build.class.dir}" />
+		</copy>
+		<copy todir="${target.rmisrv}/resource" overwrite="true">
+			<fileset dir="${src.resource.dir}">
+				<exclude name="**/*.mf" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="default" depends="build">
+		<jar destfile="${target.dir}/${jar.file}" manifest="${src.resource.dir}/manifest.mf">
+			<fileset dir="${build.class.dir}" />
+		</jar>
+	</target>
+</project>
